@@ -164,14 +164,14 @@ class Zoo:
         animal_instantiation_str = f"{animal_type}({name}, {weight})"
         self.add_animal(self, eval(animal_instantiation_str))
 
-    def feed_animals(self, time: str='Day'):
+    def feed_animals(self, time: str='day'):
         """Feed the animals that are awake."""
-
-        if time.lower() not in ['day','night']:
+        time = time.lower()
+        if time not in ['day','night']:
             raise ValueError(f"results: time must be one of 'Day' or 'Night'")
 
         for animal in self.animals:
-            if ((time == 'Day') and animal.nocturnal) or ((time == 'Night') and not animal.nocturnal):
+            if ((time == 'day') and animal.nocturnal) or ((time == 'night') and not animal.nocturnal):
                 continue
             if animal.food_type == 'carnivore':
                 animal.eat('meat')
