@@ -15,6 +15,8 @@ Optional properties:
     nocturnal, a boolean value that is True if the animal sleeps during the day,
             otherwise False (default False)
     """
+    _all_species = {}
+
     def __init__(self, name: str, weight: int, size: str, nocturnal=False, **kwargs):
         self.name = name
 
@@ -31,6 +33,8 @@ Optional properties:
         # set species from class (or subclass) name
         self._species = kwargs.get('species', type(self).__name__)
 
+        Animal._all_species[self._species] = type(self)
+
         food_type = kwargs.get('food_type', 'omnivore')
         if self._validate_food_type(food_type):
             self._food_type = food_type
@@ -39,33 +43,42 @@ Optional properties:
         self._eats = {'plants' : ['herbivore', 'omnivore'],
                       'meat' : ['carnivore', 'omnivore']}
 
+    def __repr__(self):
+        return f"<{type(self).__name__}: {str(self.__dict__)}>"
+
     @property
     def species(self):
+        """species"""
         return self._species
 
     @property
     def size(self):
+        """size"""
         return self._size
 
     @property
     def nocturnal(self):
+        """nocturnal"""
         return self._nocturnal
 
     @property
     def diurnal(self):
+        """diurnal"""
         return not self.nocturnal
 
     @property
     def food_type(self):
+        """food_type"""
         return self._food_type
 
     @property
     def weight(self):
+        """weight"""
         return self._weight
 
     @weight.setter
     def weight(self, weight):
-        if _validate_weight(weight):
+        if self._validate_weight(weight):
             self._weight = weight
 
     @staticmethod
@@ -84,7 +97,7 @@ Optional properties:
     @staticmethod
     def _validate_food_type(food_type):
         valid_food_type = ['herbivore', 'carnivore', 'omnivore']
-        if (food_type not in valid_food_type):
+        if food_type not in valid_food_type:
             raise ValueError(f"results: food_type must be one of {valid_food_type}")
         return True
 
@@ -146,10 +159,13 @@ class Gorilla(Animal):
 
 class Zoo:
     """Smart list of animals."""
-    def __init__(self, animals=[]):
+    def __init__(self, animals: list = None):
         self.animals = animals
 
-    def add_animal(self, animal: Animal):
+    def __repr__(self):
+        return f"<Zoo: {self.animals}>"
+
+    def add_animal(self, animal):
         """Add an animal to the zoo."""
         self.animals.append(animal)
 
@@ -161,17 +177,18 @@ class Zoo:
         """Add animal of type animal_type to zoo."""
         only_letters = re.compile("[a-zA-Z]")
         animal_type = "".join(only_letters.findall(animal_type))
-        animal_instantiation_str = f"{animal_type}({name}, {weight})"
-        self.add_animal(self, eval(animal_instantiation_str))
+        animal = Animal._all_species['animal_type'](name, weight)
+        self.add_animal(self, animal)
 
-    def feed_animals(self, time: str='day'):
+    def feed_animals(self, time: str = 'day'):
         """Feed the animals that are awake."""
         time = time.lower()
-        if time not in ['day','night']:
+        if time not in ['day', 'night']:
             raise ValueError(f"results: time must be one of 'Day' or 'Night'")
 
         for animal in self.animals:
-            if ((time == 'day') and animal.nocturnal) or ((time == 'night') and not animal.nocturnal):
+            if ((time == 'day') and animal.nocturnal) \
+                or ((time == 'night') and animal.diurnal):
                 continue
             if animal.food_type == 'carnivore':
                 animal.eat('meat')
