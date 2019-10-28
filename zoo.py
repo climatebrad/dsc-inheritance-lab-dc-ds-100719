@@ -184,7 +184,7 @@ class Zoo:
     def add_animal_by_attributes(self, animal_type: str, name: str, weight: int):
         """Add animal of type animal_type to zoo."""
         only_letters = re.compile("[a-zA-Z]")
-        animal_type = "".join(only_letters.findall(animal_type))
+        animal_type = "".join(only_letters.findall(animal_type)).capitalize()
         animal = Animal.of_species(animal_type)(name, weight)
         self.add_animal(animal)
 
