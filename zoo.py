@@ -18,26 +18,75 @@ Optional properties:
     def __init__(self, name: str, weight: int, size: str, nocturnal=False, **kwargs):
         self.name = name
 
+        # settable property
+        if self._validate_weight(weight):
+            self._weight = weight
+
+        # unsettable properties
+        if self._validate_size(size):
+            self._size = size
+
+        self._nocturnal = nocturnal
+
+        # set species from class (or subclass) name
+        self._species = kwargs.get('species', type(self).__name__)
+
+        food_type = kwargs.get('food_type', 'omnivore')
+        if self._validate_food_type(food_type):
+            self._food_type = food_type
+
+        # utility attribute that converts from food_type to food name
+        self._eats = {'plants' : ['herbivore', 'omnivore'],
+                      'meat' : ['carnivore', 'omnivore']}
+
+    @property
+    def species(self):
+        return self._species
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def nocturnal(self):
+        return self._nocturnal
+
+    @property
+    def diurnal(self):
+        return not self.nocturnal
+
+    @property
+    def food_type(self):
+        return self._food_type
+
+    @property
+    def weight(self):
+        return self._weight
+
+    @weight.setter
+    def weight(self, weight):
+        if _validate_weight(weight):
+            self._weight = weight
+
+    @staticmethod
+    def _validate_size(size):
         valid_size = ['small', 'medium', 'large', 'enormous']
         if size not in valid_size:
             raise ValueError(f"results: size must be one of {valid_size}")
+        return True
 
+    @staticmethod
+    def _validate_weight(weight):
         if weight < 0:
             raise ValueError(f"results: weight must be greater than or equal to 0")
-        self.weight = weight
+        return True
 
-        self.nocturnal = nocturnal
-
-        self.species = kwargs.get('species', type(self).__name__)
-
-        valid_food_type = 'herbivore', 'carnivore', 'omnivore'
-        food_type = kwargs.get('food_type', 'omnivore')
-        if (food_type) and (food_type not in valid_food_type):
+    @staticmethod
+    def _validate_food_type(food_type):
+        valid_food_type = ['herbivore', 'carnivore', 'omnivore']
+        if (food_type not in valid_food_type):
             raise ValueError(f"results: food_type must be one of {valid_food_type}")
-        self.food_type = food_type
-
-        self._eats = {'plants' : ['herbivore', 'omnivore'],
-                      'meat' : ['carnivore', 'omnivore']}
+        return True
 
     def sleep(self):
         """Prints time of sleep based on whether the animal is nocturnal."""
@@ -62,38 +111,38 @@ Optional properties:
 class Elephant(Animal):
     """An enormous animal."""
     def __init__(self, name, weight):
-        Animal.__init__(self, name,
-                        weight,
-                        size='enormous',
-                        food_type='herbivore',
-                        nocturnal=False)
+        super().__init__(name,
+                         weight,
+                         size='enormous',
+                         food_type='herbivore',
+                         nocturnal=False)
 
 class Tiger(Animal):
     """The ferocious carnivore."""
     def __init__(self, name, weight):
-        Animal.__init__(self, name,
-                        weight,
-                        size='large',
-                        food_type='carnivore',
-                        nocturnal=True)
+        super().__init__(name,
+                         weight,
+                         size='large',
+                         food_type='carnivore',
+                         nocturnal=True)
 
 class Raccoon(Animal):
     """A rascally bandit."""
     def __init__(self, name, weight):
-        Animal.__init__(self, name,
-                        weight,
-                        size='small',
-                        food_type='omnivore',
-                        nocturnal=True)
+        super().__init__(name,
+                         weight,
+                         size='small',
+                         food_type='omnivore',
+                         nocturnal=True)
 
 class Gorilla(Animal):
     """Lives in the mist."""
     def __init__(self, name, weight):
-        Animal.__init__(self, name,
-                        weight,
-                        size='large',
-                        food_type='herbivore',
-                        nocturnal=False)
+        super().__init__(name,
+                         weight,
+                         size='large',
+                         food_type='herbivore',
+                         nocturnal=False)
 
 class Zoo:
     """Smart list of animals."""
