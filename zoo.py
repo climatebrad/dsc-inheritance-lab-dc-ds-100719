@@ -1,4 +1,4 @@
-"""Zoo class for Flatiron DataScience OOP inheritance lab."""
+"""Zoo classes for Flatiron DataScience OOP inheritance lab."""
 
 import re
 
@@ -15,7 +15,6 @@ Optional properties:
     nocturnal, a boolean value that is True if the animal sleeps during the day,
             otherwise False (default False)
     """
-    _all_species = {}
 
     def __init__(self, name: str, weight: int, size: str, nocturnal=False, **kwargs):
         self.name = name
@@ -33,8 +32,6 @@ Optional properties:
         # set species from class (or subclass) name
         self._species = kwargs.get('species', type(self).__name__)
 
-        Animal._all_species[self._species] = type(self)
-
         food_type = kwargs.get('food_type', 'omnivore')
         if self._validate_food_type(food_type):
             self._food_type = food_type
@@ -45,6 +42,13 @@ Optional properties:
 
     def __repr__(self):
         return f"<{type(self).__name__}: {str(self.__dict__)}>"
+
+    @staticmethod
+    def of_species(species_name: str):
+        """Returns an animal of class species_name."""
+        return list(filter(lambda species:
+                           species.__name__ == species_name,
+                           Animal.__subclasses__()))[0]
 
     @property
     def species(self):
@@ -123,6 +127,7 @@ Optional properties:
 
 class Elephant(Animal):
     """An enormous animal."""
+
     def __init__(self, name, weight):
         super().__init__(name,
                          weight,
@@ -160,7 +165,10 @@ class Gorilla(Animal):
 class Zoo:
     """Smart list of animals."""
     def __init__(self, animals: list = None):
-        self.animals = animals
+        if animals:
+            self.animals = animals
+        else:
+            self.animals = []
 
     def __repr__(self):
         return f"<Zoo: {self.animals}>"
@@ -177,8 +185,8 @@ class Zoo:
         """Add animal of type animal_type to zoo."""
         only_letters = re.compile("[a-zA-Z]")
         animal_type = "".join(only_letters.findall(animal_type))
-        animal = Animal._all_species['animal_type'](name, weight)
-        self.add_animal(self, animal)
+        animal = Animal.of_species(animal_type)(name, weight)
+        self.add_animal(animal)
 
     def feed_animals(self, time: str = 'day'):
         """Feed the animals that are awake."""
